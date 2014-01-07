@@ -1,0 +1,1 @@
+Mock example file to show the directory structure of the whole system.

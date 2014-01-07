@@ -1,0 +1,30 @@
+#!/bin/sh
+
+# This file should have the execution rights (chmod +x on it)
+# It can be called from any folder this way:
+# /path/to/svn/myextensionj25/builds/build -v 1.2.3 -p BETA -u
+# where -v specifies the desired version number,
+# -p a precision (optional)
+# and -u (optional) that the build engine should try to install
+# the built zip file on a server.
+
+# Find the directory of this script
+SOURCE="${BASH_SOURCE[0]}"
+DIR="$( dirname "$SOURCE" )"
+while [ -h "$SOURCE" ]
+do 
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+  DIR="$( cd -P "$( dirname "$SOURCE"  )" && pwd )"
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+# Ensure compatibility with Cygwin
+if [[ `uname -s` == CYGWIN* ]] 
+then
+	DIR="$( cygpath -w ${DIR} )"
+fi
+
+# Call the build engine
+# Since we're in the builds sub-folder of the extension, we must call '..' twice to find the build engine:
+php "${DIR}/../../buildengine/build.php" -i "${DIR}/build.ini" ${*:1}
