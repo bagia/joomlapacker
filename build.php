@@ -38,9 +38,11 @@ $tmpDir = $buildsDir . $filename;
 if( !mkdir ( $tmpDir ) )
     die( "Failed to create build directory {$tmpDir}. Aborting.\r\n" );
 
-$ignoreDirs = $ini['ignore_dirs']['dirs'];
-if (empty($ignoreDirs))
+if( isset($ini['ignore_dirs']) && isset($ini['ignore_dirs']['dirs']) ) {
+    $ignoreDirs = $ini['ignore_dirs']['dirs'];
+} else {
     $ignoreDirs = array();
+}
 
 array_walk($ignoreDirs, function (&$dir) {
     global $extensionDir;

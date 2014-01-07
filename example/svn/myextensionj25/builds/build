@@ -8,6 +8,9 @@
 # and -u (optional) that the build engine should try to install
 # the built zip file on a server.
 
+# To be set to point to build.php
+BUILD_ENGINE_DIR="../../../joomlapacker"
+
 # Find the directory of this script
 SOURCE="${BASH_SOURCE[0]}"
 DIR="$( dirname "$SOURCE" )"
@@ -27,4 +30,4 @@ fi
 
 # Call the build engine
 # Since we're in the builds sub-folder of the extension, we must call '..' twice to find the build engine:
-php "${DIR}/../../buildengine/build.php" -i "${DIR}/build.ini" ${*:1}
+php "${DIR}/${BUILD_ENGINE_DIR}/build.php" -i "${DIR}/build.ini" ${*:1}
