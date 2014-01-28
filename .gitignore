@@ -1,2 +1,5 @@
 # PHPStorm IDE
 .idea/
+
+# cookie cache
+cache.txt

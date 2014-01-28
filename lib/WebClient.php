@@ -114,4 +114,14 @@ class WebClient
 	{
 		curl_close($this->ch);
 	}
+
+    public function getCookie()
+    {
+        return $this->cookie;
+    }
+
+    public function setCookie($cookie)
+    {
+        $this->cookie = $cookie;
+    }
 }

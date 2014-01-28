@@ -137,31 +137,36 @@ function InstallExtension($website, $username, $passwd) {
     $url = $website.'/administrator/index.php';
 
     $wc = new WebClient();
-    $page = $wc->Navigate($url);
+    $cookie = GetCookieForUrl($url);
+    $wc->setCookie($cookie);
+
+    $page = $wc->Navigate($url.'?option=com_installer');
     if ($page === FALSE) {
         $pb->output(0, 'Failed to load login page.');
         return FALSE;
     }
 
-    $pb->output(25, 'Logging in...');
-
     $post = $wc->getInputs();
-    $post['username'] = $username;
-    $post['passwd'] = $passwd;
 
-    $page = $wc->Navigate($url, $post);
-    if ($page === FALSE) {
-        $pb->output(25, 'Failed to post credentials.');
-        return FALSE;
+    if (isset($post['task']) && $post['task'] == 'login') {
+        $pb->output(25, 'Logging in...');
+
+        $post['username'] = $username;
+        $post['passwd'] = $passwd;
+
+        $page = $wc->Navigate($url.'?option=com_installer', $post);
+        if ($page === FALSE) {
+            $pb->output(25, 'Failed to post credentials.');
+            return FALSE;
+        }
+
+        $cookie = $wc->getCookie();
+        SaveCookie($url, $cookie);
+    } else {
+        $pb->output(25, 'Already authenticated...');
     }
 
     $pb->output(50, 'Initializing installation...');
-
-    $page = $wc->Navigate($url.'?option=com_installer');
-    if ($page === FALSE) {
-        $pb->output(50, 'Failed to access installer.');
-        return FALSE;
-    }
 
     $pb->output(75, 'Installing...');
 
@@ -177,6 +182,58 @@ function InstallExtension($website, $username, $passwd) {
     $pb->output(100, 'Done.');
 
     return $page;
+}
+
+function GetCookieStorageFile()
+{
+    $storageFile = realpath(__DIR__) . '/cache.txt';
+    if (!file_exists($storageFile)) {
+        touch($storageFile);
+    }
+    return $storageFile;
+}
+
+function GetCookies()
+{
+    $storageFile = GetCookieStorageFile();
+    $cache = file($storageFile);
+    $cookies = array();
+    foreach($cache as $raw)
+    {
+        $raw = trim($raw);
+        list($url, $cookie) = explode('|', $raw);
+        $url = base64_decode($url);
+        $cookie = base64_decode($cookie);
+        $cookies[$url] = $cookie;
+    }
+    return $cookies;
+}
+
+function SetCookies($cookies)
+{
+    $data = '';
+    foreach($cookies as $url => $cookie)
+    {
+        $data .= base64_encode($url) . "|" . base64_encode($cookie) . "\n";
+    }
+    $storageFile = GetCookieStorageFile();
+    file_put_contents($storageFile, $data);
+}
+
+function SaveCookie($url, $cookie)
+{
+    $cookies = GetCookies();
+    $cookies[$url] = $cookie;
+    SetCookies($cookies);
+}
+
+function GetCookieForUrl($url)
+{
+    $cookies = GetCookies();
+    if (isset($cookies[$url]) && !empty($cookies[$url]))
+        return $cookies[$url];
+
+    return '';
 }
 
 function ZipDirectory( $directory, $zip )
