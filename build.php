@@ -6,7 +6,7 @@
  * @author Joomunited
  */
 
-$arguments = getopt( 'v:p:i:u' );
+$arguments = getopt( 'v:p:i:ud' );
 
 if( !isset($arguments['i']) )
     die( "You must give an ini file with the -i argument. Aborting.\r\n" );
@@ -31,6 +31,9 @@ if( !isset($arguments['v']) )
 $version = $arguments['v'];
 $precision = (!empty($arguments['p'])) ? '-' . $arguments['p'] : '';
 $filename = "{$ini['extension']['slug_name']}_j{$ini['extension']['joomla_version']}_v" . $version . $precision;
+if (isset($arguments['d'])) {
+	$filename .= '-DO-NOT-RETAIL';
+}
 
 echo "Building version {$version}{$precision} to {$filename}.zip:\r\n";
 
@@ -58,8 +61,10 @@ RecursiveCopy( $extensionDir, $tmpDir );
 
 $pb->output(20, 'Writing version number...');
 
-foreach($ini['version']['files'] as $file) {
-    WriteVersion($tmpDir . $file, $version);
+if (!isset($arguments['d'])) {
+	foreach($ini['version']['files'] as $file) {
+		WriteVersion($tmpDir . $file, $version);
+	}
 }
 
 $pb->output(50, 'Zipping files...');
